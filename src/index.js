@@ -28,7 +28,7 @@ import {
   completionKeymap
 } from '@codemirror/autocomplete'
 import debounce from 'lodash-es/debounce.js'
-import { evaluate } from 'mathjs'
+import { evaluate, format } from 'mathjs'
 
 const debounceDelayMs = 300
 
@@ -43,19 +43,28 @@ sin(45 deg) ^ 2
 det([-1, 2; 3, 1])
 `
 
-function createCodeMirrorView(target) {
+function createCodeMirrorView(editorDiv, resultsDiv) {
   function calc(state) {
     const expressions = state.doc.toString()
 
-    console.log('evaluate expressions', { expressions })
+    const scope = {}
+    const results = expressions.split('\n').map((expression) => {
+      try {
+        const result = evaluate(expression, scope)
+        return { expression, result, error: undefined }
+      } catch (error) {
+        return { expression, result: undefined, error }
+      }
+    })
 
-    try {
-      const results = evaluate(expressions)
-      console.log('results', results)
-    } catch (err) {
-      console.error(err)
-    }
-    // TODO: show the results/error on screen
+    console.log('evaluate expressions', { expressions, results })
+
+    // TODO: show the results/error inline in the editor
+    resultsDiv.innerText = results
+      .map(({ expression, result, error }) => {
+        return expression.trim() === '' ? '' : error ? String(error) : format(result)
+      })
+      .join('\n')
   }
 
   const calcDebounced = debounce(calc, debounceDelayMs)
@@ -106,14 +115,15 @@ function createCodeMirrorView(target) {
 
   return new EditorView({
     state,
-    parent: target
+    parent: editorDiv
   })
 }
 
 function init() {
-  const target = document.getElementById('editor')
+  const editorDiv = document.getElementById('editor')
+  const resultsDiv = document.getElementById('results')
 
-  createCodeMirrorView(target)
+  createCodeMirrorView(editorDiv, resultsDiv)
 }
 
 init()
