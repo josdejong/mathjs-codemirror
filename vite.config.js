@@ -1,5 +1,5 @@
 export default {
-  base: '/mathjs-codemirror',
+  base: './',
   build: {
     chunkSizeWarningLimit: 1024 // kB
   }
