@@ -1,5 +1,7 @@
 # Math.js CodeMirror Editor
 
+A mathjs editor in CodeMirror
+
 ## Usage
 
 Install dependencies once:
