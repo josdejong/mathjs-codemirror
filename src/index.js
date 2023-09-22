@@ -28,6 +28,7 @@ import {
   completionKeymap
 } from '@codemirror/autocomplete'
 import debounce from 'lodash-es/debounce.js'
+import { evaluate } from 'mathjs'
 
 const debounceDelayMs = 300
 
@@ -45,7 +46,7 @@ function createCodeMirrorView(target) {
     console.log('evaluate expressions', { expressions })
 
     try {
-      const results = window.math.evaluate(expressions)
+      const results = evaluate(expressions)
       console.log('results', results)
     } catch (err) {
       console.error(err)
