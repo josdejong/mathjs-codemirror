@@ -18,8 +18,12 @@ import {
   defaultHighlightStyle,
   foldKeymap,
   indentOnInput,
-  syntaxHighlighting
+  syntaxHighlighting,
+  StreamLanguage
 } from '@codemirror/language'
+
+import {mathjs} from "./mathjs.js"
+
 import { highlightSelectionMatches, search, searchKeymap } from '@codemirror/search'
 import {
   autocompletion,
@@ -72,6 +76,7 @@ function createCodeMirrorView(editorDiv, resultsDiv) {
   const state = EditorState.create({
     doc: initialText,
     extensions: [
+      StreamLanguage.define(mathjs),
       keymap.of([indentWithTab]),
       lintGutter(),
       lineNumbers(),
