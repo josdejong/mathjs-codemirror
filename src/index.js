@@ -33,9 +33,13 @@ import { evaluate } from 'mathjs'
 const debounceDelayMs = 300
 
 const initialText = `1.2 * (2 + 4.5)
+
 12.7 cm to inch
+
 sin(45 deg) ^ 2
+
 9 / 3 + 2i
+
 det([-1, 2; 3, 1])
 `
 
