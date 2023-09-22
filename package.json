@@ -1,0 +1,28 @@
+{
+  "name": "mathjs-codemirror",
+  "version": "1.0.0",
+  "description": "A mathjs editor in CodeMirror",
+  "main": "index.html",
+  "scripts": {
+    "build": "vite build",
+    "lint": "prettier --check .",
+    "format": "prettier --write ."
+  },
+  "author": "Jos de Jong",
+  "license": "ISC",
+  "devDependencies": {
+    "prettier": "3.0.3",
+    "vite": "4.4.9"
+  },
+  "dependencies": {
+    "@codemirror/autocomplete": "6.9.1",
+    "@codemirror/commands": "6.2.5",
+    "@codemirror/language": "6.9.1",
+    "@codemirror/lint": "6.4.2",
+    "@codemirror/search": "6.5.4",
+    "@codemirror/state": "6.2.1",
+    "@codemirror/view": "6.20.0",
+    "lodash-es": "4.17.21",
+    "mathjs": "11.11.1"
+  }
+}

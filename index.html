@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+    <title>Math.js CodeMirror Editor</title>
+    <link rel="shortcut icon" type="image/icon" href="./favicon.ico" />
+
+    <link rel="stylesheet" href="./src/style.css" />
+    <script type="importmap">
+      {
+        "imports": {
+          "@codemirror/state": "./node_modules/@codemirror/state/dist/index.js",
+          "@codemirror/view": "./node_modules/@codemirror/view/dist/index.js",
+          "@codemirror/commands": "./node_modules/@codemirror/commands/dist/index.js",
+          "@codemirror/lint": "./node_modules/@codemirror/lint/dist/index.js",
+          "@codemirror/language": "./node_modules/@codemirror/language/dist/index.js",
+          "@codemirror/search": "./node_modules/@codemirror/search/dist/index.js",
+          "@codemirror/autocomplete": "./node_modules/@codemirror/autocomplete/dist/index.js",
+          "style-mod": "./node_modules/style-mod/src/style-mod.js",
+          "w3c-keyname": "./node_modules/w3c-keyname/index.js",
+          "@lezer/common": "./node_modules/@lezer/common/dist/index.js",
+          "@lezer/json": "./node_modules/@lezer/json/dist/index.js",
+          "@lezer/lr": "./node_modules/@lezer/lr/dist/index.js",
+          "@lezer/highlight": "./node_modules/@lezer/highlight/dist/index.js",
+          "crelt": "./node_modules/crelt/index.js",
+          "lodash-es/debounce.js": "./node_modules/lodash-es/debounce.js"
+        }
+      }
+    </script>
+    <script src="./node_modules/mathjs/lib/browser/math.js"></script>
+    <script type="module" src="./src/index.js"></script>
+  </head>
+
+  <body>
+    <h1>Math.js CodeMirror Editor</h1>
+    <div id="editor"></div>
+  </body>
+</html>
