@@ -7,11 +7,11 @@ Try it out: https://josdejong.github.io/mathjs-codemirror/
 ## Todo
 
 - [x] Create a CodeMirror editor
-- [ ] Enable color highlighting for mathjs
-- [ ] Enable autocompletion for mathjs functions, constants, and units
 - [x] Evaluate the editor contents with mathjs
-- [ ] Show the results inline using a CodeMirror Widget
 - [x] Deploy on Github Pages
+- [x] Enable color highlighting for mathjs
+- [ ] Enable autocompletion for mathjs functions, constants, and units
+- [ ] Show the results inline using a CodeMirror Widget
 
 ## Usage
 
@@ -29,6 +29,6 @@ npm run dev
 
 Build a bundle (generated in the `dist` folder):
 
-``` 
+```
 npm run build
 ```

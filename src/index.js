@@ -22,7 +22,7 @@ import {
   StreamLanguage
 } from '@codemirror/language'
 
-import {mathjs} from "./mathjs.js"
+import { mathjsLang } from './mathjs-lang.js'
 
 import { highlightSelectionMatches, search, searchKeymap } from '@codemirror/search'
 import {
@@ -32,7 +32,7 @@ import {
   completionKeymap
 } from '@codemirror/autocomplete'
 import debounce from 'lodash-es/debounce.js'
-import { evaluate, format } from 'mathjs'
+import { create, all } from 'mathjs'
 
 const debounceDelayMs = 300
 
@@ -48,13 +48,15 @@ det([-1, 2; 3, 1])
 `
 
 function createCodeMirrorView(editorDiv, resultsDiv) {
+  const math = create(all)
+
   function calc(state) {
     const expressions = state.doc.toString()
 
     const scope = {}
     const results = expressions.split('\n').map((expression) => {
       try {
-        const result = evaluate(expression, scope)
+        const result = math.evaluate(expression, scope)
         return { expression, result, error: undefined }
       } catch (error) {
         return { expression, result: undefined, error }
@@ -66,7 +68,7 @@ function createCodeMirrorView(editorDiv, resultsDiv) {
     // TODO: show the results/error inline in the editor
     resultsDiv.innerText = results
       .map(({ expression, result, error }) => {
-        return expression.trim() === '' ? '' : error ? String(error) : format(result)
+        return expression.trim() === '' ? '' : error ? String(error) : math.format(result)
       })
       .join('\n')
   }
@@ -76,7 +78,7 @@ function createCodeMirrorView(editorDiv, resultsDiv) {
   const state = EditorState.create({
     doc: initialText,
     extensions: [
-      StreamLanguage.define(mathjs),
+      StreamLanguage.define(mathjsLang(math)),
       keymap.of([indentWithTab]),
       lintGutter(),
       lineNumbers(),

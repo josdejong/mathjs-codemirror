@@ -1,6 +1,6 @@
 # https://github.com/marketplace/actions/deploy-to-github-pages
 name: Build and Deploy to Github Pages
-on: [ push ]
+on: [push]
 permissions:
   contents: write
 jobs:
