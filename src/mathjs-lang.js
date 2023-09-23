@@ -180,7 +180,7 @@ export function mathjsLang(math) {
     },
 
     languageData: {
-      commentTokens: { line: '%' }
+      commentTokens: { line: '#' }
     }
   }
 }
