@@ -184,18 +184,34 @@ export function mathjsLang(math) {
       autocomplete: myCompletions
     }
   }
+
+  function myCompletions(context) {
+    let word = context.matchBefore(/\w*/)
+    if (word.from == word.to && !context.explicit)
+      return null
+    let options = []
+    console.log(word)
+    // math functions and constants
+    const ignore = ['expr', 'type']
+    const mathFunctions = math.expression.mathWithTransform
+
+    for (const func in mathFunctions) {
+      if (hasOwnPropertySafe(mathFunctions, func)) {
+        if (func.startsWith(word.text) && ignore.indexOf(func) === -1) {
+          options.push({ label: func, type: "function" })
+        }
+      }
+    }
+    options.push({ label: "sin", type: "function" })
+    return {
+      from: word.from,
+      options
+    }
+  }
 }
 
-function myCompletions(context) {
-  let word = context.matchBefore(/\w*/)
-  if (word.from == word.to && !context.explicit)
-    return null
-  return {
-    from: word.from,
-    options: [
-      {label: "match", type: "keyword"},
-      {label: "hello", type: "variable", info: "(World)"},
-      {label: "magic", type: "text", apply: "⠁⭒*.✩.*⭒⠁", detail: "macro"}
-    ]
-  }
+// helper function to safely check whether an object has a property
+// copy from the function in object.js which is ES6
+function hasOwnPropertySafe(object, property) {
+  return object && Object.hasOwnProperty.call(object, property)
 }
