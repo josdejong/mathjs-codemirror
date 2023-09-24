@@ -190,19 +190,59 @@ export function mathjsLang(math) {
     if (word.from == word.to && !context.explicit)
       return null
     let options = []
-    console.log(word)
     // math functions and constants
     const ignore = ['expr', 'type']
     const mathFunctions = math.expression.mathWithTransform
 
+    numberLiterals.forEach(x=>options.push({label:x, type:"type"}))
+    // functions
     for (const func in mathFunctions) {
       if (hasOwnPropertySafe(mathFunctions, func)) {
-        if (func.startsWith(word.text) && ignore.indexOf(func) === -1) {
-          options.push({ label: func, type: "function" })
+        if (ignore.indexOf(func) === -1) {
+          if (typeof math[func] === 'function') {
+            options.push({ label: func, type: "function" })
+          }
+          else if (!numberLiterals.includes(func)) {
+            options.push({ label: func, type:"constant"})
+          }
         }
       }
     }
-    options.push({ label: "sin", type: "function" })
+
+    // units as enum
+    for (const name in math.Unit.UNITS) {
+      if (hasOwnPropertySafe(math.Unit.UNITS, name)) {
+        if (name.startsWith(word.text)) {
+          options.push({label:name, type:'enum'})
+        }
+      }
+    }
+    for (const name in math.Unit.PREFIXES) {
+      if (hasOwnPropertySafe(math.Unit.PREFIXES, name)) {
+        const prefixes = math.Unit.PREFIXES[name]
+        for (const prefix in prefixes) {
+          if (hasOwnPropertySafe(prefixes, prefix)) {
+            if (prefix.startsWith(word.text)) {
+              options.push({label:prefix, type:'enum'})
+            } else if (word.text.startsWith(prefix)) {
+              const unitKeyword = word.text.substring(prefix.length)
+              for (const n in math.Unit.UNITS) {
+                const fullUnit = prefix + n
+                if (hasOwnPropertySafe(math.Unit.UNITS, n)) {
+                  if (
+                    !options.includes(fullUnit) &&
+                    n.startsWith(unitKeyword) &&
+                    math.Unit.isValuelessUnit(fullUnit)) {
+                    options.push({label:fullUnit, type:'enum'})
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+
     return {
       from: word.from,
       options
