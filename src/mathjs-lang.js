@@ -198,6 +198,10 @@ export function mathjsLang(math) {
       constant => options.push({ label: constant, type: "constant" })
     )
 
+    numberLiterals.forEach(
+      number => options.push({label:number, type:"variable"})
+    )
+
     // units as enum
     for (const name in math.Unit.UNITS) {
       if (hasOwnPropertySafe(math.Unit.UNITS, name)) {
