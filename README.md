@@ -10,8 +10,12 @@ Try it out: https://josdejong.github.io/mathjs-codemirror/
 - [x] Evaluate the editor contents with mathjs
 - [x] Deploy on Github Pages
 - [x] Enable color highlighting for mathjs
-- [ ] Enable autocompletion for mathjs functions, constants, and units
+- [x] Enable autocompletion for mathjs functions, constants, and units
 - [ ] Show the results inline using a CodeMirror Widget
+
+Extra:
+
+- [ ] Enable autocompletion for constants in scope
 
 ## Usage
 
