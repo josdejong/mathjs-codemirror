@@ -1,11 +1,5 @@
-import {
-  Decoration,
-  DecorationSet,
-  EditorView,
-  ViewPlugin,
-  ViewUpdate,
-  WidgetType
-} from '@codemirror/view'
+import { EditorState, StateField } from '@codemirror/state'
+import { Decoration, DecorationSet, EditorView, WidgetType } from '@codemirror/view'
 import { last } from 'lodash-es'
 import { MathJsStatic } from 'mathjs'
 
@@ -17,20 +11,18 @@ interface Result {
   error: Error | undefined
 }
 
-// useful docs and examples:
-// - https://codemirror.net/examples/decoration/
-// - https://discuss.codemirror.net/t/block-decoration-error-uncaught-rangeerror-block-decorations-may-not-be-specified-via-plugins/4102/2
-export function mathjsResultPlugin({
+// docs and examples: https://codemirror.net/examples/decoration/
+export function mathjsResultsDecorator({
   evaluate,
   format
 }: {
   evaluate: MathJsStatic['evaluate']
   format: MathJsStatic['format']
 }) {
-  function mathjsResults(view: EditorView) {
+  function mathjsResults(state: EditorState) {
     let widgets = []
 
-    const expressions = view.state.doc.toString()
+    const expressions = state.doc.toString()
     const scope = new Map()
 
     // FIXME: re-calculate only after a delay of 300 ms
@@ -59,7 +51,7 @@ export function mathjsResultPlugin({
         const decoration = Decoration.widget({
           widget: new MathjsResultWidget(result),
           side: 1, // right side
-          block: false // FIXME enable block decoration, set block:true
+          block: true // render as a block after the line
         })
         widgets.push(decoration.range(result.pos))
       })
@@ -91,7 +83,7 @@ export function mathjsResultPlugin({
     }
 
     eq(other: MathjsResultWidget) {
-      // FIXME: look at all lines up until now
+      // FIXME: look at all lines up until now to determine whether the line should be recalculated
       return other.result.index === this.result.index && other.result.text === this.result.text
     }
 
@@ -103,7 +95,7 @@ export function mathjsResultPlugin({
       const resultSpan = document.createElement('span')
       resultSpan.setAttribute('aria-hidden', 'true')
       resultSpan.className =
-        'cm-mathjs-result' + (this.result.error ? ' cm-mathjs-result-error' : '')
+        'cm-line cm-mathjs-result' + (this.result.error ? ' cm-mathjs-error' : '')
       resultSpan.appendChild(document.createTextNode(resultStr))
 
       return resultSpan
@@ -114,28 +106,18 @@ export function mathjsResultPlugin({
     }
   }
 
-  return ViewPlugin.fromClass(
-    class {
-      decorations: DecorationSet
-
-      constructor(view: EditorView) {
-        this.decorations = mathjsResults(view)
-      }
-
-      update(update: ViewUpdate) {
-        if (update.docChanged || update.viewportChanged) {
-          this.decorations = mathjsResults(update.view)
-        }
-      }
+  return StateField.define<DecorationSet>({
+    create(state) {
+      return mathjsResults(state)
     },
-    {
-      decorations: (v) => v.decorations,
-
-      eventHandlers: {
-        mousedown: (e, view) => {
-          // TODO: should be able to copy the result. Add a copy button that is visible on hover?
-        }
+    update(decorations, transaction) {
+      // FIXME: keep the previous decorations that are unchanged
+      if (transaction.docChanged) {
+        return mathjsResults(transaction.state)
       }
-    }
-  )
+
+      return decorations
+    },
+    provide: (f) => EditorView.decorations.from(f)
+  })
 }

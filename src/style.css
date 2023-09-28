@@ -23,9 +23,8 @@ h1 {
 .cm-mathjs-result {
   color: dodgerblue;
   margin-left: 1em;
-  display: block; /* FIXME: should not be needed when configuring block:true */
 
-  &.cm-mathjs-result-error {
+  &.cm-mathjs-error {
     color: #ff3535;
   }
 }
