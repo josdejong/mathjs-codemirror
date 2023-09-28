@@ -32,7 +32,7 @@ import {
   completionKeymap
 } from '@codemirror/autocomplete'
 import { all, create } from 'mathjs'
-import { mathjsResultsDecorator } from './widgets/mathjsResultsDecorator.js'
+import { mathjsEvaluator } from './widgets/mathjsEvaluator.js'
 
 const initialText = `1.2 * (2 + 4.5)
 
@@ -43,6 +43,8 @@ sin(45 deg) ^ 2
 9 / 3 + 2i
 
 det([-1, 2; 3, 1])
+
+simplify('5x + 2x + 240/2.5')
 `
 
 function createCodeMirrorView(editorDiv: HTMLElement) {
@@ -65,7 +67,7 @@ function createCodeMirrorView(editorDiv: HTMLElement) {
       bracketMatching(),
       closeBrackets(),
       autocompletion(),
-      mathjsResultsDecorator(math),
+      mathjsEvaluator(math),
       rectangularSelection(),
       crosshairCursor(),
       highlightActiveLine(),

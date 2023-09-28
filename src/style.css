@@ -67,6 +67,11 @@ h1 {
 .cm-editor {
   flex: 1;
   overflow: hidden;
+
+  &.cm-focused {
+    outline: none;
+    box-shadow: 0 2px 10px 0 dodgerblue;
+  }
 }
 
 .cm-mathjs-result {
