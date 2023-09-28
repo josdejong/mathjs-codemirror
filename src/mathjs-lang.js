@@ -53,10 +53,6 @@ export function mathjsLang(math) {
     }
   }
 
-  const builtins = wordRegexp(mathFunctions)
-
-  const keywords = wordRegexp(['to', 'in', 'and', 'not', 'or', 'xor', 'mod'])
-
   // generates a list of all valid units in mathjs
   const listOfUnits = []
   for (const unit in math.Unit.UNITS) {
@@ -64,6 +60,10 @@ export function mathjsLang(math) {
       listOfUnits.push(prefix + unit)
     }
   }
+
+  const builtins = wordRegexp(mathFunctions)
+
+  const keywords = wordRegexp(['to', 'in', 'and', 'not', 'or', 'xor', 'mod'])
 
   const units = wordRegexp(Array.from(new Set(listOfUnits)))
   const physicalConstants = wordRegexp(mathPhysicalConstants)
@@ -180,7 +180,71 @@ export function mathjsLang(math) {
     },
 
     languageData: {
-      commentTokens: { line: '%' }
+      commentTokens: { line: '#' },
+      autocomplete: myCompletions
     }
   }
+
+  function myCompletions(context) {
+    let word = context.matchBefore(/\w*/)
+    if (word.from == word.to && !context.explicit)
+      return null
+    let options = []
+    mathFunctions.forEach(
+      func => options.push({ label: func, type: "function" })
+    )
+
+    mathPhysicalConstants.forEach(
+      constant => options.push({ label: constant, type: "constant" })
+    )
+
+    numberLiterals.forEach(
+      number => options.push({label:number, type:"variable"})
+    )
+
+    // units as enum
+    for (const name in math.Unit.UNITS) {
+      if (hasOwnPropertySafe(math.Unit.UNITS, name)) {
+        if (name.startsWith(word.text)) {
+          options.push({ label: name, type: 'enum' })
+        }
+      }
+    }
+    for (const name in math.Unit.PREFIXES) {
+      if (hasOwnPropertySafe(math.Unit.PREFIXES, name)) {
+        const prefixes = math.Unit.PREFIXES[name]
+        for (const prefix in prefixes) {
+          if (hasOwnPropertySafe(prefixes, prefix)) {
+            if (prefix.startsWith(word.text)) {
+              options.push({ label: prefix, type: 'enum' })
+            } else if (word.text.startsWith(prefix)) {
+              const unitKeyword = word.text.substring(prefix.length)
+              for (const n in math.Unit.UNITS) {
+                const fullUnit = prefix + n
+                if (hasOwnPropertySafe(math.Unit.UNITS, n)) {
+                  if (
+                    !options.includes(fullUnit) &&
+                    n.startsWith(unitKeyword) &&
+                    math.Unit.isValuelessUnit(fullUnit)) {
+                    options.push({ label: fullUnit, type: 'enum' })
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+
+    return {
+      from: word.from,
+      options
+    }
+  }
+}
+
+// helper function to safely check whether an object has a property
+// copy from the function in object.js which is ES6
+function hasOwnPropertySafe(object, property) {
+  return object && Object.hasOwnProperty.call(object, property)
 }

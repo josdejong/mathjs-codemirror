@@ -29,7 +29,8 @@ import {
   autocompletion,
   closeBrackets,
   closeBracketsKeymap,
-  completionKeymap
+  completionKeymap,
+  CompletionContext
 } from '@codemirror/autocomplete'
 import debounce from 'lodash-es/debounce.js'
 import { create, all } from 'mathjs'
