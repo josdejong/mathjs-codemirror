@@ -3,7 +3,8 @@
   --background-color: #d1e7ff;
   --text-color: dodgerblue;
   --text-color-error: #ff3535;
-  --margin: 10px
+  --margin: 10px;
+  --editor-width: 600px;
 }
 
 
@@ -11,6 +12,8 @@ html {
   width: 100%;
   height: 100%;
   display: flex;
+  flex-direction: row;
+  justify-content: center;
   padding: 0;
   margin: 0;
   overflow: hidden;
@@ -23,10 +26,13 @@ body {
   flex-direction: column;
   gap: var(--margin);
   background: var(--background-color);
+  max-width: var(--editor-width);
+  min-width: 0;
 }
 
 p.footer {
   margin: 0;
+  font-size: 80%;
 }
 
 a {
@@ -58,7 +64,9 @@ h1 {
   }
 }
 
-#results {
+.cm-editor {
+  flex: 1;
+  overflow: hidden;
 }
 
 .cm-mathjs-result {
