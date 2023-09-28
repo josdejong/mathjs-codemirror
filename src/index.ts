@@ -18,8 +18,8 @@ import {
   defaultHighlightStyle,
   foldKeymap,
   indentOnInput,
-  syntaxHighlighting,
-  StreamLanguage
+  StreamLanguage,
+  syntaxHighlighting
 } from '@codemirror/language'
 
 import { mathjsLang } from './mathjs-lang.js'
@@ -29,13 +29,10 @@ import {
   autocompletion,
   closeBrackets,
   closeBracketsKeymap,
-  completionKeymap,
-  CompletionContext
+  completionKeymap
 } from '@codemirror/autocomplete'
-import debounce from 'lodash-es/debounce.js'
-import { create, all } from 'mathjs'
-
-const debounceDelayMs = 300
+import { all, create } from 'mathjs'
+import { mathjsResultPlugin } from './widgets/mathjsResultPlugin.js'
 
 const initialText = `1.2 * (2 + 4.5)
 
@@ -48,33 +45,8 @@ sin(45 deg) ^ 2
 det([-1, 2; 3, 1])
 `
 
-function createCodeMirrorView(editorDiv, resultsDiv) {
+function createCodeMirrorView(editorDiv: HTMLElement) {
   const math = create(all)
-
-  function calc(state) {
-    const expressions = state.doc.toString()
-
-    const scope = {}
-    const results = expressions.split('\n').map((expression) => {
-      try {
-        const result = math.evaluate(expression, scope)
-        return { expression, result, error: undefined }
-      } catch (error) {
-        return { expression, result: undefined, error }
-      }
-    })
-
-    console.log('evaluate expressions', { expressions, results })
-
-    // TODO: show the results/error inline in the editor
-    resultsDiv.innerText = results
-      .map(({ expression, result, error }) => {
-        return expression.trim() === '' ? '' : error ? String(error) : math.format(result)
-      })
-      .join('\n')
-  }
-
-  const calcDebounced = debounce(calc, debounceDelayMs)
 
   const state = EditorState.create({
     doc: initialText,
@@ -93,6 +65,7 @@ function createCodeMirrorView(editorDiv, resultsDiv) {
       bracketMatching(),
       closeBrackets(),
       autocompletion(),
+      mathjsResultPlugin(math),
       rectangularSelection(),
       crosshairCursor(),
       highlightActiveLine(),
@@ -106,20 +79,11 @@ function createCodeMirrorView(editorDiv, resultsDiv) {
         ...completionKeymap,
         ...lintKeymap
       ]),
-      // highlighter, // TODO
-      EditorView.updateListener.of((update) => {
-        if (update.docChanged) {
-          calcDebounced(update.state)
-        }
-      }),
-      // TODO: set mathjs language or mode in CodeMirror,
       search({
         top: true
       })
     ]
   })
-
-  calc(state)
 
   return new EditorView({
     state,
@@ -129,9 +93,8 @@ function createCodeMirrorView(editorDiv, resultsDiv) {
 
 function init() {
   const editorDiv = document.getElementById('editor')
-  const resultsDiv = document.getElementById('results')
 
-  createCodeMirrorView(editorDiv, resultsDiv)
+  createCodeMirrorView(editorDiv)
 }
 
 init()

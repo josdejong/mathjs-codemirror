@@ -13,6 +13,7 @@
   "author": "Jos de Jong",
   "license": "ISC",
   "devDependencies": {
+    "@types/lodash-es": "4.17.9",
     "prettier": "3.0.3",
     "vite": "4.4.9"
   },
