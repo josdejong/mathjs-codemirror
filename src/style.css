@@ -1,13 +1,54 @@
+
+:root {
+  --background-color: #d1e7ff;
+  --text-color: dodgerblue;
+  --text-color-error: #ff3535;
+  --margin: 10px
+}
+
+
+html {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  padding: 0;
+  margin: 0;
+  overflow: hidden;
+}
+
+body {
+  flex: 1;
+  margin: var(--margin);
+  display: flex;
+  flex-direction: column;
+  gap: var(--margin);
+  background: var(--background-color);
+}
+
+p.footer {
+  margin: 0;
+}
+
+a {
+  color: var(--text-color);
+
+  &:hover {
+    color: var(--text-color-error);
+  }
+}
+
 h1 {
   font-family: sans-serif;
   font-size: 1.2em;
   font-weight: normal;
+  color: var(--text-color);
+  margin: 0;
 }
 
 #editor {
-  width: 500px;
-  height: 500px;
-  border: 1px solid #e5e5e5;
+  flex: 1;
+  border: 1px solid var(--text-color);
+  background: white;
   display: flex;
   min-width: 0;
   min-height: 0;
@@ -21,10 +62,10 @@ h1 {
 }
 
 .cm-mathjs-result {
-  color: dodgerblue;
+  color: var(--text-color);
   margin-left: 1em;
 
   &.cm-mathjs-error {
-    color: #ff3535;
+    color: var(--text-color-error);
   }
 }
