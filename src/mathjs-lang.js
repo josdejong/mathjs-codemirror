@@ -187,20 +187,13 @@ export function mathjsLang(math) {
 
   function myCompletions(context) {
     let word = context.matchBefore(/\w*/)
-    if (word.from == word.to && !context.explicit)
-      return null
+    if (word.from == word.to && !context.explicit) return null
     let options = []
-    mathFunctions.forEach(
-      func => options.push({ label: func, type: "function" })
-    )
+    mathFunctions.forEach((func) => options.push({ label: func, type: 'function' }))
 
-    mathPhysicalConstants.forEach(
-      constant => options.push({ label: constant, type: "constant" })
-    )
+    mathPhysicalConstants.forEach((constant) => options.push({ label: constant, type: 'constant' }))
 
-    numberLiterals.forEach(
-      number => options.push({label:number, type:"variable"})
-    )
+    numberLiterals.forEach((number) => options.push({ label: number, type: 'variable' }))
 
     // units as enum
     for (const name in math.Unit.UNITS) {
@@ -225,7 +218,8 @@ export function mathjsLang(math) {
                   if (
                     !options.includes(fullUnit) &&
                     n.startsWith(unitKeyword) &&
-                    math.Unit.isValuelessUnit(fullUnit)) {
+                    math.Unit.isValuelessUnit(fullUnit)
+                  ) {
                     options.push({ label: fullUnit, type: 'enum' })
                   }
                 }
