@@ -33,8 +33,13 @@ import {
   completionKeymap
 } from '@codemirror/autocomplete'
 import { all, create } from 'mathjs'
-import { Line, mathjsResultsPlugin, recalculateEffect } from './widgets/mathjsResultsPlugin.js'
-import { debounce, last } from 'lodash-es'
+import {
+  Line,
+  mathjsResultsPlugin,
+  recalculateEffect,
+  Result
+} from './widgets/mathjsResultsPlugin.js'
+import { debounce, isEqual, last } from 'lodash-es'
 
 const recalculateDelay = 500 // ms
 
@@ -63,18 +68,41 @@ function createCodeMirrorView(editorDiv: HTMLElement) {
     }, [])
   }
 
+  let prevResults: Result[] = []
+
   function recalculate() {
     const expressions = editor.state.doc.toString()
     console.log('recalculate')
 
     const lines = splitLines(expressions)
 
-    const scope = new Map()
-    const results = lines.map((line) => {
-      // TODO: only recalculate when there are actual changes (remember previous state)
-      const { answer, error } = tryEvaluate(line, scope)
-      return { line, answer, error }
-    })
+    let scope = new Map()
+    const results = lines
+      .filter((line) => line.text.trim() !== '')
+      .map((line, index) => {
+        const scopeBefore = new Map(scope)
+        const prevResult: Result | undefined = prevResults[index]
+
+        if (
+          prevResult &&
+          isEqual(prevResult.line.text, line.text) &&
+          isEqual(prevResult.scopeBefore, scopeBefore)
+        ) {
+          scope = new Map(prevResult.scopeAfter)
+
+          return {
+            ...prevResult,
+            line
+          }
+        } else {
+          const { answer, error } = tryEvaluate(line, scope)
+          const scopeAfter = new Map(scope)
+
+          return { line, scopeBefore, scopeAfter, answer, error }
+        }
+      })
+
+    prevResults = results
 
     editor.dispatch({
       effects: recalculateEffect.of(results)
@@ -83,6 +111,7 @@ function createCodeMirrorView(editorDiv: HTMLElement) {
 
   function tryEvaluate(line: Line, scope: Map<string, unknown>) {
     try {
+      console.log('evaluate', line)
       return {
         answer: line.text.trim() !== '' ? math.evaluate(line.text, scope) : undefined,
         error: undefined

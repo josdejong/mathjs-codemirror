@@ -11,6 +11,8 @@ export interface Line {
 
 export interface Result {
   line: Line
+  scopeBefore: Map<string, unknown>
+  scopeAfter: Map<string, unknown>
   answer: MathType | undefined
   error: Error | undefined
 }
@@ -71,6 +73,7 @@ export function mathjsResultsPlugin({ format }: { format: MathJsStatic['format']
   }
 
   function updateResults(prevDecorations: DecorationSet, results: Result[]): DecorationSet {
+    // TODO: reuse previous decorations
     const decorations = results.map((result) => {
       const widget = new ResultWidget(result)
       const decoration = Decoration.widget({
@@ -90,8 +93,10 @@ export function mathjsResultsPlugin({ format }: { format: MathJsStatic['format']
     { fromA, toA, fromB, toB, inserted }: Change
   ): DecorationSet {
     const getPos = (decoration: Decoration) => decoration.spec.widget.props.line.pos
-    const setPos = (decoration: Decoration, newPos: number) =>
-      (decoration.spec.widget.props.line.pos = newPos)
+    const setPos = (decoration: Decoration, newPos: number) => {
+      decoration.spec.widget.props.line = { ...decoration.spec.widget.props.line, pos: newPos }
+      return newPos
+    }
 
     // TODO: figure out if we can simplify this code with methods like decorations.map or decorations.update
     const removing = toB - toA < 0
@@ -108,7 +113,8 @@ export function mathjsResultsPlugin({ format }: { format: MathJsStatic['format']
         // shift decorations after the removed/inserted text
         const pos = getPos(decoration)
         const shift = (stepOver && !removing ? pos > fromA : pos >= fromA) ? toB - toA : 0
-        const newPos = setPos(decoration, pos + shift)
+        const newPos = pos + shift
+        setPos(decoration, newPos)
         return decoration.range(newPos)
       })
 
@@ -116,8 +122,8 @@ export function mathjsResultsPlugin({ format }: { format: MathJsStatic['format']
   }
 
   return StateField.define<DecorationSet>({
-    create(state) {
-      return Decoration.none // evaluateState(Decoration.none, state)
+    create() {
+      return Decoration.none
     },
     update(decorations, transaction) {
       // when typing in the document, immediately shift and remove the existing decorations
