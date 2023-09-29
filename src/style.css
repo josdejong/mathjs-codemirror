@@ -1,4 +1,3 @@
-
 :root {
   --background-color: #d1e7ff;
   --text-color: #1e90ff;
@@ -7,7 +6,6 @@
   --margin: 10px;
   --editor-width: 600px;
 }
-
 
 html {
   width: 100%;
@@ -82,7 +80,6 @@ h1 {
   &.cm-mathjs-error {
     color: var(--text-color-error);
   }
-
 }
 
 .cm-mathjs-result button.copy {
