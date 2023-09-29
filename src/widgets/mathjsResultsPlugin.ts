@@ -52,12 +52,14 @@ export function mathjsResultsPlugin({ format }: { format: MathJsStatic['format']
         ? format(answer, { precision: 14 })
         : undefined
 
-      const resultSpan = document.createElement('span')
-      resultSpan.setAttribute('aria-hidden', 'true')
-      resultSpan.className = 'cm-line cm-mathjs-result' + (error ? ' cm-mathjs-error' : '')
+      const resultContainer = document.createElement('span')
+      resultContainer.setAttribute('aria-hidden', 'true')
+      resultContainer.className = 'cm-line cm-mathjs-result' + (error ? ' cm-mathjs-error' : '')
 
       if (resultStr) {
-        resultSpan.appendChild(document.createTextNode(resultStr))
+        const resultInner = document.createElement('span')
+        resultInner.className = 'cm-mathjs-result-inner'
+        resultInner.appendChild(document.createTextNode(resultStr))
 
         const copyButton = document.createElement('button')
         const copyText = 'copy'
@@ -68,11 +70,12 @@ export function mathjsResultsPlugin({ format }: { format: MathJsStatic['format']
           copyButton.innerText = 'copied!'
           setTimeout(() => (copyButton.innerText = copyText), 1000)
         }
+        resultInner.appendChild(copyButton)
 
-        resultSpan.appendChild(copyButton)
+        resultContainer.appendChild(resultInner)
       }
 
-      return resultSpan
+      return resultContainer
     }
 
     ignoreEvent() {

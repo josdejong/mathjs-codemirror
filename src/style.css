@@ -82,7 +82,7 @@ h1 {
   }
 }
 
-.cm-mathjs-result button.copy {
+.cm-mathjs-result-inner button.copy {
   display: none;
   background: var(--text-color);
   color: white;
@@ -97,6 +97,6 @@ h1 {
   }
 }
 
-.cm-mathjs-result:hover button.copy {
+.cm-mathjs-result-inner:hover button.copy {
   display: inline-block;
 }
