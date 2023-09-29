@@ -9,7 +9,8 @@ import {
   highlightSpecialChars,
   keymap,
   lineNumbers,
-  rectangularSelection
+  rectangularSelection,
+  ViewUpdate
 } from '@codemirror/view'
 import { defaultKeymap, history, historyKeymap, indentWithTab } from '@codemirror/commands'
 import { lintGutter, lintKeymap } from '@codemirror/lint'
@@ -32,7 +33,10 @@ import {
   completionKeymap
 } from '@codemirror/autocomplete'
 import { all, create } from 'mathjs'
-import { mathjsEvaluator } from './widgets/mathjsEvaluator.js'
+import { Line, mathjsResultsPlugin, recalculateEffect } from './widgets/mathjsResultsPlugin.js'
+import { debounce, last } from 'lodash-es'
+
+const recalculateDelay = 500 // ms
 
 const initialText = `1.2 * (2 + 4.5)
 
@@ -49,6 +53,49 @@ simplify('5x + 2x + 240/2.5')
 
 function createCodeMirrorView(editorDiv: HTMLElement) {
   const math = create(all)
+
+  function splitLines(expressions: string): Line[] {
+    return expressions.split('\n').reduce((all, text, index) => {
+      const prevLine = last(all)
+      const pos = (prevLine ? prevLine.pos + 1 : 0) + text.length
+      const line = { pos, index, text }
+      return [...all, line]
+    }, [])
+  }
+
+  function recalculate() {
+    const expressions = editor.state.doc.toString()
+    console.log('recalculate')
+
+    const lines = splitLines(expressions)
+
+    const scope = new Map()
+    const results = lines.map((line) => {
+      // TODO: only recalculate when there are actual changes (remember previous state)
+      const { answer, error } = tryEvaluate(line, scope)
+      return { line, answer, error }
+    })
+
+    editor.dispatch({
+      effects: recalculateEffect.of(results)
+    })
+  }
+
+  function tryEvaluate(line: Line, scope: Map<string, unknown>) {
+    try {
+      return {
+        answer: line.text.trim() !== '' ? math.evaluate(line.text, scope) : undefined,
+        error: undefined
+      }
+    } catch (error) {
+      return {
+        answer: undefined,
+        error
+      }
+    }
+  }
+
+  const recalculateDebounced = debounce(recalculate, recalculateDelay)
 
   const state = EditorState.create({
     doc: initialText,
@@ -67,7 +114,7 @@ function createCodeMirrorView(editorDiv: HTMLElement) {
       bracketMatching(),
       closeBrackets(),
       autocompletion(),
-      mathjsEvaluator(math),
+      mathjsResultsPlugin({ format: math.format }),
       rectangularSelection(),
       crosshairCursor(),
       highlightActiveLine(),
@@ -83,14 +130,24 @@ function createCodeMirrorView(editorDiv: HTMLElement) {
       ]),
       search({
         top: true
+      }),
+      EditorView.updateListener.of((update: ViewUpdate) => {
+        if (update.docChanged) {
+          console.log('docChanged')
+          recalculateDebounced()
+        }
       })
     ]
   })
 
-  return new EditorView({
+  const editor = new EditorView({
     state,
     parent: editorDiv
   })
+
+  recalculate()
+
+  return editor
 }
 
 function init() {
