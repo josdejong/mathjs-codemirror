@@ -191,6 +191,7 @@ function init() {
         insert: defaultExpressions
       }
     })
+    recalculateDebounced.flush()
   })
 
   recalculate()
