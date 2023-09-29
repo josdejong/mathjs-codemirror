@@ -1,7 +1,8 @@
 
 :root {
   --background-color: #d1e7ff;
-  --text-color: dodgerblue;
+  --text-color: #1e90ff;
+  --text-color-highlight: #58aeff;
   --text-color-error: #ff3535;
   --margin: 10px;
   --editor-width: 600px;
@@ -81,4 +82,24 @@ h1 {
   &.cm-mathjs-error {
     color: var(--text-color-error);
   }
+
+}
+
+.cm-mathjs-result button.copy {
+  display: none;
+  background: var(--text-color);
+  color: white;
+  border: none;
+  border-radius: 3px;
+  cursor: pointer;
+  margin-left: 5px;
+  padding: 0 5px;
+
+  &:hover {
+    background: var(--text-color-highlight);
+  }
+}
+
+.cm-mathjs-result:hover button.copy {
+  display: inline-block;
 }

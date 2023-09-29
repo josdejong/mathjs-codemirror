@@ -58,6 +58,18 @@ export function mathjsResultsPlugin({ format }: { format: MathJsStatic['format']
 
       if (resultStr) {
         resultSpan.appendChild(document.createTextNode(resultStr))
+
+        const copyButton = document.createElement('button')
+        const copyText = 'copy'
+        copyButton.className = 'copy'
+        copyButton.innerText = copyText
+        copyButton.onclick = async () => {
+          await navigator.clipboard?.writeText(resultStr)
+          copyButton.innerText = 'copied!'
+          setTimeout(() => (copyButton.innerText = copyText), 1000)
+        }
+
+        resultSpan.appendChild(copyButton)
       }
 
       return resultSpan
