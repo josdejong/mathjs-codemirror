@@ -83,18 +83,19 @@ function createCodeMirrorView(editorDiv: HTMLElement) {
         const scopeBefore = new Map(scope)
         const prevResult: Result | undefined = prevResults[index]
 
+        // TODO: we can make checking for changes smarter by collecting the used
+        //  symbols from the expression and filtering the scope on the used symbols
         if (
           prevResult &&
           isEqual(prevResult.line.text, line.text) &&
           isEqual(prevResult.scopeBefore, scopeBefore)
         ) {
+          // no changes, use previous result
           scope = new Map(prevResult.scopeAfter)
 
-          return {
-            ...prevResult,
-            line
-          }
+          return { ...prevResult, line }
         } else {
+          // evaluate
           const { answer, error } = tryEvaluate(line, scope)
           const scopeAfter = new Map(scope)
 
