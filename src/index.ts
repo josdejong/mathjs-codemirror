@@ -43,7 +43,9 @@ import { debounce, isEqual, last } from 'lodash-es'
 
 const recalculateDelay = 500 // ms
 
-const initialText = `1.2 * (2 + 4.5)
+const localStorageKey = 'mathjs-codemirror-expressions'
+
+const defaultExpressions = `1.2 * (2 + 4.5)
 
 12.7 cm to inch
 
@@ -56,7 +58,7 @@ det([-1, 2; 3, 1])
 simplify('5x + 2x + 240/2.5')
 `
 
-function createCodeMirrorView(editorDiv: HTMLElement) {
+function init() {
   const math = create(all)
 
   function splitLines(expressions: string): Line[] {
@@ -72,6 +74,7 @@ function createCodeMirrorView(editorDiv: HTMLElement) {
 
   function recalculate() {
     const expressions = editor.state.doc.toString()
+    localStorage[localStorageKey] = expressions
     console.log('recalculate')
 
     const lines = splitLines(expressions)
@@ -128,7 +131,10 @@ function createCodeMirrorView(editorDiv: HTMLElement) {
   const recalculateDebounced = debounce(recalculate, recalculateDelay)
 
   const state = EditorState.create({
-    doc: initialText,
+    doc:
+      localStorage[localStorageKey] !== undefined
+        ? localStorage[localStorageKey]
+        : defaultExpressions,
     extensions: [
       StreamLanguage.define(mathjsLang(math)),
       keymap.of([indentWithTab]),
@@ -170,20 +176,24 @@ function createCodeMirrorView(editorDiv: HTMLElement) {
     ]
   })
 
+  const editorDiv = document.getElementById('editor')
   const editor = new EditorView({
     state,
     parent: editorDiv
   })
 
+  const resetLink = document.getElementById('reset')
+  resetLink.addEventListener('click', () => {
+    editor.dispatch({
+      changes: {
+        from: 0,
+        to: editor.state.doc.length,
+        insert: defaultExpressions
+      }
+    })
+  })
+
   recalculate()
-
-  return editor
-}
-
-function init() {
-  const editorDiv = document.getElementById('editor')
-
-  createCodeMirrorView(editorDiv)
 }
 
 init()
