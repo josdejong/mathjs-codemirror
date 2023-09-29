@@ -60,12 +60,13 @@ export function mathjsResultsPlugin({ format }: { format: MathJsStatic['format']
         const resultInner = document.createElement('span')
         resultInner.className = 'cm-mathjs-result-inner'
         resultInner.appendChild(document.createTextNode(resultStr))
+        resultInner.title = 'Click to copy the result to the clipboard'
 
         const copyButton = document.createElement('button')
         const copyText = 'copy'
         copyButton.className = 'copy'
         copyButton.innerText = copyText
-        copyButton.onclick = async () => {
+        resultInner.onclick = async () => {
           await navigator.clipboard?.writeText(resultStr)
           copyButton.innerText = 'copied!'
           setTimeout(() => (copyButton.innerText = copyText), 1000)
