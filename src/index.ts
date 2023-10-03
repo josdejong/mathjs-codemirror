@@ -73,9 +73,9 @@ function init() {
   let prevResults: Result[] = []
 
   function recalculate() {
+    console.time('recalculate')
     const expressions = editor.state.doc.toString()
     localStorage[localStorageKey] = expressions
-    console.log('recalculate')
 
     const lines = splitLines(expressions)
 
@@ -83,7 +83,8 @@ function init() {
     const results = lines
       .filter((line) => line.text.trim() !== '')
       .map((line, index) => {
-        const scopeBefore = new Map(scope)
+        const scopeBefore = scope
+        scope = cloneScope(scope)
         const prevResult: Result | undefined = prevResults[index]
 
         // TODO: we can make checking for changes smarter by collecting the used
@@ -94,13 +95,13 @@ function init() {
           isEqual(prevResult.scopeBefore, scopeBefore)
         ) {
           // no changes, use previous result
-          scope = new Map(prevResult.scopeAfter)
+          scope = prevResult.scopeAfter
 
           return { ...prevResult, line }
         } else {
           // evaluate
           const { answer, error } = tryEvaluate(line, scope)
-          const scopeAfter = new Map(scope)
+          const scopeAfter = scope
 
           return { line, scopeBefore, scopeAfter, answer, error }
         }
@@ -111,6 +112,8 @@ function init() {
     editor.dispatch({
       effects: recalculateEffect.of(results)
     })
+
+    console.timeEnd('recalculate')
   }
 
   function tryEvaluate(line: Line, scope: Map<string, unknown>) {
@@ -126,6 +129,16 @@ function init() {
         error
       }
     }
+  }
+
+  function cloneScope(scope: Map<string, unknown>): Map<string, unknown> {
+    const clone = new Map<string, unknown>()
+
+    scope.forEach((value, key) => {
+      clone.set(key, math.clone(value))
+    })
+
+    return clone
   }
 
   const recalculateDebounced = debounce(recalculate, recalculateDelay)
