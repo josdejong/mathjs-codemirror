@@ -45,10 +45,11 @@ export function mathjsResultsPlugin({ format }: { format: MathJsStatic['format']
 
     toDOM() {
       const { answer, error } = this.props
-
+      const answerNotEmpty = answer === null || (answer !== undefined && (!(typeof answer === 'object' && answer.isResultSet && answer.entries.length === 0)))
+      
       const resultStr = error
         ? String(error)
-        : answer
+        : answerNotEmpty
         ? format(answer, { precision: 14 })
         : undefined
 
@@ -56,7 +57,7 @@ export function mathjsResultsPlugin({ format }: { format: MathJsStatic['format']
       resultContainer.setAttribute('aria-hidden', 'true')
       resultContainer.className = 'cm-line cm-mathjs-result' + (error ? ' cm-mathjs-error' : '')
 
-      if (resultStr) {
+      if (answerNotEmpty) {
         const resultInner = document.createElement('span')
         resultInner.className = 'cm-mathjs-result-inner'
         resultInner.appendChild(document.createTextNode(resultStr))
