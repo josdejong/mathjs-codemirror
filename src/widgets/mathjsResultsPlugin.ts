@@ -57,7 +57,7 @@ export function mathjsResultsPlugin({ format }: { format: MathJsStatic['format']
       resultContainer.setAttribute('aria-hidden', 'true')
       resultContainer.className = 'cm-line cm-mathjs-result' + (error ? ' cm-mathjs-error' : '')
 
-      if (answerNotEmpty) {
+      if (resultStr) {
         const resultInner = document.createElement('span')
         resultInner.className = 'cm-mathjs-result-inner'
         resultInner.appendChild(document.createTextNode(resultStr))
