@@ -5,7 +5,7 @@
  *
  * @param {Object} math A mathjs instance
  */
-export function mathjsLang(math) {
+export function mathjsLang(math, scopeSymbols) {
   function wordRegexp(words) {
     return new RegExp('^((' + words.join(')|(') + '))\\b')
   }
@@ -194,6 +194,9 @@ export function mathjsLang(math) {
     mathPhysicalConstants.forEach((constant) => options.push({ label: constant, type: 'constant' }))
 
     numberLiterals.forEach((number) => options.push({ label: number, type: 'variable' }))
+
+    // TODO make symbols (variables in scope) update dynamically
+    scopeSymbols.forEach(symbol => options.push({ label: symbol, type:'property'}))
 
     // units as enum
     for (const name in math.Unit.UNITS) {

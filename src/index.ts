@@ -61,6 +61,8 @@ simplify('5x + 2x + 240/2.5')
 function init() {
   const math = create(all)
 
+  let scope = new Map()
+
   function splitLines(expressions: string): Line[] {
     return expressions.split('\n').reduce((all, text, index) => {
       const prevLine = last(all)
@@ -79,7 +81,6 @@ function init() {
 
     const lines = splitLines(expressions)
 
-    let scope = new Map()
     const results = lines
       .filter((line) => line.text.trim() !== '')
       .map((line, index) => {
@@ -149,7 +150,7 @@ function init() {
         ? localStorage[localStorageKey]
         : defaultExpressions,
     extensions: [
-      StreamLanguage.define(mathjsLang(math)),
+      StreamLanguage.define(mathjsLang(math, Array.from(scope.keys()))),
       keymap.of([indentWithTab]),
       lintGutter(),
       lineNumbers(),
