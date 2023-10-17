@@ -87,12 +87,31 @@ function init() {
         scope = cloneScope(scope)
         const prevResult: Result | undefined = prevResults[index]
 
-        // TODO: we can make checking for changes smarter by collecting the used
-        //  symbols from the expression and filtering the scope on the used symbols
+        const usedSymbols = new Set()
+        const parsedLine = math.parse(line.text)
+        parsedLine.traverse(
+          node => {
+            // this only gets the symbols in the expression,
+            // doesn't differentiate if the symbol is the output of an assignment
+            // TODO: filter only the input symbols
+            if(node.isSymbolNode){
+              usedSymbols.add(node.name)
+            }
+          }
+        )
+
+
         if (
           prevResult &&
-          isEqual(prevResult.line.text, line.text) &&
-          isEqual(prevResult.scopeBefore, scopeBefore)
+          isEqual(
+            // checks if the expressions are equally parsed
+            parsedLine.toString(),
+            math.parse(prevResult.line.text).toString()) &&
+          isEqual(
+            // filter the scopes, to only check for symbols in the expression
+            new Map([...scope].filter(([key]) => usedSymbols.has(key))),
+            new Map([...scopeBefore].filter(([key]) => usedSymbols.has(key)))
+            )
         ) {
           // no changes, use previous result
           scope = prevResult.scopeAfter
