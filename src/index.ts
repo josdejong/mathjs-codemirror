@@ -138,6 +138,7 @@ function init() {
   function tryEvaluate(line: Line, scope: Map<string, unknown>) {
     try {
       console.log('evaluate', line)
+      console.log(scope)
       return {
         answer: line.text.trim() !== '' ? math.evaluate(line.text, scope) : undefined,
         error: undefined
@@ -154,7 +155,9 @@ function init() {
     const clone = new Map<string, unknown>()
 
     scope.forEach((value, key) => {
-      clone.set(key, math.clone(value))
+      clone.set(key, 
+        typeof value === 'function' ? value.bind({}) : math.clone(value)
+        )
     })
 
     return clone
