@@ -11,7 +11,7 @@ Try it out: https://josdejong.github.io/mathjs-codemirror/
 - [x] Deploy on Github Pages
 - [x] Enable color highlighting for mathjs
 - [x] Enable autocompletion for mathjs functions, constants, and units
-- [ ] Show the results inline using a CodeMirror Widget
+- [x] Show the results inline using a CodeMirror Widget
 
 Extra:
 
