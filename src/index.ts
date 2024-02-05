@@ -107,10 +107,11 @@ function init() {
             // checks if the expressions are equally parsed
             parsedLine.toString(),
             math.parse(prevResult.line.text).toString()) &&
+          prevResults.scopeAfter && // check if the filtered scope is equal to the previous results filtered scope
           isEqual(
             // filter the scopes, to only check for symbols in the expression
             new Map([...scope].filter(([key]) => usedSymbols.has(key))),
-            new Map([...scopeBefore].filter(([key]) => usedSymbols.has(key)))
+            new Map([...prevResults.scopeAfter].filter(([key]) => usedSymbols.has(key)))
             )
         ) {
           // no changes, use previous result
