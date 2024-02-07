@@ -32,7 +32,7 @@ import {
   closeBracketsKeymap,
   completionKeymap
 } from '@codemirror/autocomplete'
-import { all, create } from 'mathjs'
+import { all, create, parse } from 'mathjs'
 import {
   Line,
   mathjsResultsPlugin,
@@ -87,32 +87,41 @@ function init() {
         scope = cloneScope(scope)
         const prevResult: Result | undefined = prevResults[index]
 
+        let canBeParsed
+        let parsedLine
+        
+        try {
+          parsedLine = math.parse(line.text)
+          canBeParsed = true
+        } catch (error) {
+          parsedLine = math.parse("")
+          canBeParsed = false
+        }
+        
         const usedSymbols = new Set()
-        const parsedLine = math.parse(line.text)
-        parsedLine.traverse(
-          node => {
-            // this only gets the symbols in the expression,
-            // doesn't differentiate if the symbol is the output of an assignment
-            // TODO: filter only the input symbols
-            if(node.isSymbolNode){
-              usedSymbols.add(node.name)
+        if (canBeParsed) {
+          parsedLine.traverse(
+            node => {
+              // this only gets the symbols in the expression,
+              // doesn't differentiate if the symbol is the output of an assignment
+              // TODO: filter only the input symbols
+              if (node.isSymbolNode) {
+                usedSymbols.add(node.name)
+              }
             }
-          }
-        )
-
+          )
+        }
 
         if (
-          prevResult &&
-          isEqual(
-            // checks if the expressions are equally parsed
-            parsedLine.toString(),
-            math.parse(prevResult.line.text).toString()) &&
+          prevResult && canBeParsed && prevResult.canBeParsed &&
+          // checks if the expressions are equally parsed
+          parsedLine.equals(prevResult.parsedLine) &&
           prevResults.scopeAfter && // check if the filtered scope is equal to the previous results filtered scope
           isEqual(
             // filter the scopes, to only check for symbols in the expression
             new Map([...scope].filter(([key]) => usedSymbols.has(key))),
             new Map([...prevResults.scopeAfter].filter(([key]) => usedSymbols.has(key)))
-            )
+          )
         ) {
           // no changes, use previous result
           scope = prevResult.scopeAfter
@@ -123,7 +132,7 @@ function init() {
           const { answer, error } = tryEvaluate(line, scope)
           const scopeAfter = scope
 
-          return { line, scopeBefore, scopeAfter, answer, error }
+          return { line, scopeBefore, scopeAfter, answer, error, parsedLine, canBeParsed }
         }
       })
 
@@ -156,9 +165,9 @@ function init() {
     const clone = new Map<string, unknown>()
 
     scope.forEach((value, key) => {
-      clone.set(key, 
+      clone.set(key,
         typeof value === 'function' ? value.bind({}) : math.clone(value)
-        )
+      )
     })
 
     return clone
