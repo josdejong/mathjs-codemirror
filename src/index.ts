@@ -90,7 +90,7 @@ function init() {
 
         let canBeParsed
         let parsedLine
-        
+
         try {
           parsedLine = math.parse(line.text)
           canBeParsed = true
@@ -98,7 +98,7 @@ function init() {
           parsedLine = math.parse("")
           canBeParsed = false
         }
-        
+
         const usedSymbols = new Set()
         if (canBeParsed) {
           parsedLine.traverse(
@@ -176,17 +176,13 @@ function init() {
 
   const recalculateDebounced = debounce(recalculate, recalculateDelay)
 
- function createMathjsLang(){
-  return mathjsLang(()=>math, ()=>scope)
- }
-
   const state = EditorState.create({
     doc:
       localStorage[localStorageKey] !== undefined
         ? localStorage[localStorageKey]
         : defaultExpressions,
     extensions: [
-      StreamLanguage.define(createMathjsLang()),
+      StreamLanguage.define(mathjsLang(() => math, () => scope)),
       keymap.of([indentWithTab]),
       lintGutter(),
       lineNumbers(),
