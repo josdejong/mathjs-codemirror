@@ -32,7 +32,7 @@ import {
   closeBracketsKeymap,
   completionKeymap
 } from '@codemirror/autocomplete'
-import { all, create } from 'mathjs'
+import { all, create, parse } from 'mathjs'
 import {
   Line,
   mathjsResultsPlugin,
@@ -88,12 +88,41 @@ function init() {
         scope = cloneScope(scope)
         const prevResult: Result | undefined = prevResults[index]
 
-        // TODO: we can make checking for changes smarter by collecting the used
-        //  symbols from the expression and filtering the scope on the used symbols
+        let canBeParsed
+        let parsedLine
+        
+        try {
+          parsedLine = math.parse(line.text)
+          canBeParsed = true
+        } catch (error) {
+          parsedLine = math.parse("")
+          canBeParsed = false
+        }
+        
+        const usedSymbols = new Set()
+        if (canBeParsed) {
+          parsedLine.traverse(
+            node => {
+              // this only gets the symbols in the expression,
+              // doesn't differentiate if the symbol is the output of an assignment
+              // TODO: filter only the input symbols
+              if (node.isSymbolNode) {
+                usedSymbols.add(node.name)
+              }
+            }
+          )
+        }
+
         if (
-          prevResult &&
-          isEqual(prevResult.line.text, line.text) &&
-          isEqual(prevResult.scopeBefore, scopeBefore)
+          prevResult && canBeParsed && prevResult.canBeParsed &&
+          // checks if the expressions are equally parsed
+          parsedLine.equals(prevResult.parsedLine) &&
+          prevResults.scopeAfter && // check if the filtered scope is equal to the previous results filtered scope
+          isEqual(
+            // filter the scopes, to only check for symbols in the expression
+            new Map([...scope].filter(([key]) => usedSymbols.has(key))),
+            new Map([...prevResults.scopeAfter].filter(([key]) => usedSymbols.has(key)))
+          )
         ) {
           // no changes, use previous result
           scope = prevResult.scopeAfter
@@ -104,7 +133,7 @@ function init() {
           const { answer, error } = tryEvaluate(line, scope)
           const scopeAfter = scope
 
-          return { line, scopeBefore, scopeAfter, answer, error }
+          return { line, scopeBefore, scopeAfter, answer, error, parsedLine, canBeParsed }
         }
       })
 
@@ -120,6 +149,7 @@ function init() {
   function tryEvaluate(line: Line, scope: Map<string, unknown>) {
     try {
       console.log('evaluate', line)
+      console.log(scope)
       return {
         answer: line.text.trim() !== '' ? math.evaluate(line.text, scope) : undefined,
         error: undefined
@@ -136,7 +166,9 @@ function init() {
     const clone = new Map<string, unknown>()
 
     scope.forEach((value, key) => {
-      clone.set(key, math.clone(value))
+      clone.set(key,
+        typeof value === 'function' ? value.bind({}) : math.clone(value)
+      )
     })
 
     return clone
