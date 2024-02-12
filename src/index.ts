@@ -12,7 +12,7 @@ import {
   rectangularSelection,
   ViewUpdate
 } from '@codemirror/view'
-import { defaultKeymap, history, historyKeymap, indentWithTab } from '@codemirror/commands'
+import { copyLineDown, defaultKeymap, history, historyKeymap, indentWithTab } from '@codemirror/commands'
 import { lintGutter, lintKeymap } from '@codemirror/lint'
 import {
   bracketMatching,
@@ -144,13 +144,17 @@ function init() {
 
   const recalculateDebounced = debounce(recalculate, recalculateDelay)
 
+ function createMathjsLang(){
+  return mathjsLang(()=>math, ()=>scope)
+ }
+
   const state = EditorState.create({
     doc:
       localStorage[localStorageKey] !== undefined
         ? localStorage[localStorageKey]
         : defaultExpressions,
     extensions: [
-      StreamLanguage.define(mathjsLang(math, Array.from(scope.keys()))),
+      StreamLanguage.define(createMathjsLang()),
       keymap.of([indentWithTab]),
       lintGutter(),
       lineNumbers(),
