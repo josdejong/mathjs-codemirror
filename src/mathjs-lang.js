@@ -3,7 +3,9 @@
  *
  * TODO: this is using CodeMirror v5 functionality, upgrade this to v6
  *
- * @param {Object} math A mathjs instance
+ * @param {function} getMath - A function that gets a mathjs instance.
+ * @param {function} getScope - A function that returns a mathjs scope.
+ * @returns {object} An object with properties and methods for mathjs syntax highlighting and autocompletion in CodeMirror.
  */
 export function mathjsLang(getMath, getScope) {
   function wordRegexp(words) {
