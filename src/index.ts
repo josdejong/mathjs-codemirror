@@ -12,7 +12,7 @@ import {
   rectangularSelection,
   ViewUpdate
 } from '@codemirror/view'
-import { defaultKeymap, history, historyKeymap, indentWithTab } from '@codemirror/commands'
+import { copyLineDown, defaultKeymap, history, historyKeymap, indentWithTab } from '@codemirror/commands'
 import { lintGutter, lintKeymap } from '@codemirror/lint'
 import {
   bracketMatching,
@@ -61,6 +61,8 @@ simplify('5x + 2x + 240/2.5')
 function init() {
   const math = create(all)
 
+  let scope = new Map()
+
   function splitLines(expressions: string): Line[] {
     return expressions.split('\n').reduce((all, text, index) => {
       const prevLine = last(all)
@@ -79,7 +81,6 @@ function init() {
 
     const lines = splitLines(expressions)
 
-    let scope = new Map()
     const results = lines
       .filter((line) => line.text.trim() !== '')
       .map((line, index) => {
@@ -89,7 +90,7 @@ function init() {
 
         let canBeParsed
         let parsedLine
-        
+
         try {
           parsedLine = math.parse(line.text)
           canBeParsed = true
@@ -97,7 +98,7 @@ function init() {
           parsedLine = math.parse("")
           canBeParsed = false
         }
-        
+
         const usedSymbols = new Set()
         if (canBeParsed) {
           parsedLine.traverse(
@@ -181,7 +182,7 @@ function init() {
         ? localStorage[localStorageKey]
         : defaultExpressions,
     extensions: [
-      StreamLanguage.define(mathjsLang(math)),
+      StreamLanguage.define(mathjsLang(() => math, () => scope)),
       keymap.of([indentWithTab]),
       lintGutter(),
       lineNumbers(),

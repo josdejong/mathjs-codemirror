@@ -3,9 +3,11 @@
  *
  * TODO: this is using CodeMirror v5 functionality, upgrade this to v6
  *
- * @param {Object} math A mathjs instance
+ * @param {function} getMath - A function that gets a mathjs instance.
+ * @param {function} getScope - A function that returns a mathjs scope.
+ * @returns {object} An object with properties and methods for mathjs syntax highlighting and autocompletion in CodeMirror.
  */
-export function mathjsLang(math) {
+export function mathjsLang(getMath, getScope) {
   function wordRegexp(words) {
     return new RegExp('^((' + words.join(')|(') + '))\\b')
   }
@@ -43,9 +45,9 @@ export function mathjsLang(math) {
   ]
 
   // based on https://github.com/josdejong/mathjs/blob/develop/bin/cli.js
-  for (const expr in math.expression.mathWithTransform) {
+  for (const expr in getMath().expression.mathWithTransform) {
     if (!mathIgnore.includes(expr)) {
-      if (typeof math[expr] === 'function') {
+      if (typeof getMath()[expr] === 'function') {
         mathFunctions.push(expr)
       } else if (!numberLiterals.includes(expr)) {
         mathPhysicalConstants.push(expr)
@@ -55,8 +57,8 @@ export function mathjsLang(math) {
 
   // generates a list of all valid units in mathjs
   const listOfUnits = []
-  for (const unit in math.Unit.UNITS) {
-    for (const prefix in math.Unit.UNITS[unit].prefixes) {
+  for (const unit in getMath().Unit.UNITS) {
+    for (const prefix in getMath().Unit.UNITS[unit].prefixes) {
       listOfUnits.push(prefix + unit)
     }
   }
@@ -195,30 +197,33 @@ export function mathjsLang(math) {
 
     numberLiterals.forEach((number) => options.push({ label: number, type: 'variable' }))
 
+    // TODO make symbols (variables in scope) update dynamically
+    getScope().forEach((_, symbol) => options.push({ label: symbol, type:'property'}))
+    
     // units as enum
-    for (const name in math.Unit.UNITS) {
-      if (hasOwnPropertySafe(math.Unit.UNITS, name)) {
+    for (const name in getMath().Unit.UNITS) {
+      if (hasOwnPropertySafe(getMath().Unit.UNITS, name)) {
         if (name.startsWith(word.text)) {
           options.push({ label: name, type: 'enum' })
         }
       }
     }
-    for (const name in math.Unit.PREFIXES) {
-      if (hasOwnPropertySafe(math.Unit.PREFIXES, name)) {
-        const prefixes = math.Unit.PREFIXES[name]
+    for (const name in getMath().Unit.PREFIXES) {
+      if (hasOwnPropertySafe(getMath().Unit.PREFIXES, name)) {
+        const prefixes = getMath().Unit.PREFIXES[name]
         for (const prefix in prefixes) {
           if (hasOwnPropertySafe(prefixes, prefix)) {
             if (prefix.startsWith(word.text)) {
               options.push({ label: prefix, type: 'enum' })
             } else if (word.text.startsWith(prefix)) {
               const unitKeyword = word.text.substring(prefix.length)
-              for (const n in math.Unit.UNITS) {
+              for (const n in getMath().Unit.UNITS) {
                 const fullUnit = prefix + n
-                if (hasOwnPropertySafe(math.Unit.UNITS, n)) {
+                if (hasOwnPropertySafe(getMath().Unit.UNITS, n)) {
                   if (
                     !options.includes(fullUnit) &&
                     n.startsWith(unitKeyword) &&
-                    math.Unit.isValuelessUnit(fullUnit)
+                    getMath().Unit.isValuelessUnit(fullUnit)
                   ) {
                     options.push({ label: fullUnit, type: 'enum' })
                   }
